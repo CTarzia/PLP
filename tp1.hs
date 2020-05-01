@@ -17,7 +17,7 @@ instance Show Tarea where
 recTarea :: (String -> Int -> a) ->
             (Tarea -> Tarea -> a -> a -> a) ->
             (Tarea -> Tarea -> a -> a -> Int -> a) -> Tarea -> a
-recTarea fBasica fIndep fDep(Basica nombre tiempo) =
+recTarea fBasica fIndep fDep (Basica nombre tiempo) =
     fBasica nombre tiempo
 recTarea fBasica fIndep fDep (Independientes tarea1 tarea2) =
     fIndep tarea1 tarea2 (seguir tarea1) (seguir tarea2)
@@ -144,9 +144,13 @@ tarea2 = Basica "b" 1
 tarea3 = Basica "c" 1
 tarea4 = Basica "d" 2
 tarea5 = DependeDe (Independientes tarea2 tarea3) tarea4 2
+tarea6 = Independientes tarea2 tarea1
+tarea7 = DependeDe tarea6 tarea5 1
 lista1 = [tarea1]
 lista2 = [tarea2,tarea3,tarea4]
 lista3 = [tarea1,tarea5]
+lista4 = [tarea1,tarea2,tarea3,tarea4,tarea5,tarea6]
+lista5 = [tarea2,tarea1]
 
 sumas1 :: [LuzMagica Int]
 sumas1 = ((+1):sumas1)
@@ -155,36 +159,51 @@ sumas123 = ((+1):((+2):((+3):sumas123)))
 
 testsEj1 = test [
   "a" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea1,
-  "a" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea1
+  "b" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea6,
+  "b" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea5,
+  "a" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea1,
+  "b" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea6,
+  "b" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea5
   ]
 
 testsEj2 = test [
   1 ~=? cantidadDeTareasBasicas lista1,
   4 ~=? cantidadDeTareasBasicas lista3,
+  9 ~=? cantidadDeTareasBasicas lista4,
   3 ~=? cantidadMaximaDeHoras lista1,
   9 ~=? cantidadMaximaDeHoras lista3,
+  17 ~=? cantidadMaximaDeHoras lista4,
   [] ~=? tareasMasLargas 3 lista1,
-  [tarea5] ~=? tareasMasLargas 3 lista3
+  [tarea5] ~=? tareasMasLargas 3 lista3,
+  [tarea5,tarea6] ~=? tareasMasLargas 3 lista4
   ]
 
 testsEj3 = test [
-  tarea1 ~=? chauListas lista1
+  tarea1 ~=? chauListas lista1,
+  tarea6 ~=? chauListas lista5,
+  Independientes tarea2 (Independientes tarea3 tarea4) ~=? chauListas lista2
   ]
 
 testsEj4 = test [
   lista1 ~=? tareasBasicas tarea1,
   lista2 ~=? tareasBasicas tarea5,
+  [tarea2,tarea1] ~=? tareasBasicas tarea6,
   False ~=? esSubTareaDe "b" tarea1,
   True ~=? esSubTareaDe "b" tarea5,
+  True ~=? esSubTareaDe "a" tarea6,
   [tarea1] ~=? tareasBasicasIniciales tarea1,
   [tarea4] ~=? tareasBasicasIniciales tarea5,
+  [tarea2,tarea1] ~=? tareasBasicasIniciales tarea6,
   [] ~=? tareasBasicasQueDependenDe "b" tarea5,
-  [tarea2,tarea3] ~=? tareasBasicasQueDependenDe "d" tarea5
+  [tarea2,tarea3] ~=? tareasBasicasQueDependenDe "d" tarea5,
+  [] ~=? tareasBasicasQueDependenDe "a" tarea6,
+  [] ~=? tareasBasicasQueDependenDe "d" tarea6
   ]
 
 testsEj5 = test [
   "a" ~=? cuelloDeBotella tarea1,
-  "d" ~=? cuelloDeBotella tarea5
+  "d" ~=? cuelloDeBotella tarea5,
+  "d" ~=? cuelloDeBotella tarea7
   ]
 
 testsEj6 = test [
