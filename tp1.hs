@@ -146,16 +146,20 @@ tarea4 = Basica "d" 2
 tarea5 = DependeDe (Independientes tarea2 tarea3) tarea4 2
 tarea6 = Independientes tarea2 tarea1
 tarea7 = DependeDe tarea6 tarea5 1
+tarea8 = DependeDe tarea1 (DependeDe tarea2 (DependeDe tarea3 tarea4 1) 1) 1
+tareaInterminable = DependeDe tareaInterminable tareaInterminable 1
 lista1 = [tarea1]
 lista2 = [tarea2,tarea3,tarea4]
 lista3 = [tarea1,tarea5]
 lista4 = [tarea1,tarea2,tarea3,tarea4,tarea5,tarea6]
 lista5 = [tarea2,tarea1]
+lista6 = [tarea8]
 
 sumas1 :: [LuzMagica Int]
 sumas1 = ((+1):sumas1)
 sumas123 :: [LuzMagica Int]
 sumas123 = ((+1):((+2):((+3):sumas123)))
+sumasN = scanl1 (.) sumas1 -- [(+1), (+2), (+3), ...]
 
 devuelvenNumeros :: [LuzMagica Int]
 devuelvenNumeros = [(\x -> 1), (\x -> 2), (\x -> 3)]
@@ -164,18 +168,23 @@ testsEj1 = test [
   "a" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea1,
   "b" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea6,
   "b" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea5,
+  0   ~=? recTarea (\n h -> 0) (\t1 t2 s1 s2 -> 0)  (\t1 t2 s1 s2 h -> 0) tareaInterminable,
   "a" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea1,
   "b" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea6,
-  "b" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea5
+  "b" ~=? foldTarea (\n h -> n) (\s1 s2 -> s1) (\s1 s2 h -> s1) tarea5,
+  0   ~=? foldTarea (\n h -> 0) (\t1 t2 -> 0)  (\t1 t2 h -> 0) tareaInterminable
   ]
 
 testsEj2 = test [
   1 ~=? cantidadDeTareasBasicas lista1,
   4 ~=? cantidadDeTareasBasicas lista3,
   9 ~=? cantidadDeTareasBasicas lista4,
+  0 ~=? cantidadDeTareasBasicas [],
+  4 ~=? cantidadDeTareasBasicas lista6,
   3 ~=? cantidadMaximaDeHoras lista1,
   9 ~=? cantidadMaximaDeHoras lista3,
   17 ~=? cantidadMaximaDeHoras lista4,
+  10 ~=? cantidadMaximaDeHoras lista6,
   [] ~=? tareasMasLargas 3 lista1,
   [tarea5] ~=? tareasMasLargas 3 lista3,
   [tarea5,tarea6] ~=? tareasMasLargas 3 lista4
@@ -206,7 +215,8 @@ testsEj4 = test [
 testsEj5 = test [
   "a" ~=? cuelloDeBotella tarea1,
   "d" ~=? cuelloDeBotella tarea5,
-  "d" ~=? cuelloDeBotella tarea7
+  "d" ~=? cuelloDeBotella tarea7,
+  "d" ~=? cuelloDeBotella tarea8
   ]
 
 testsEj6 = test [
@@ -215,5 +225,6 @@ testsEj6 = test [
   0 ~=? pasos 1 sumas123 1,
   1 ~=? pasos 1 devuelvenNumeros 0,
   2 ~=? pasos 2 devuelvenNumeros 0,
-  3 ~=? pasos 3 devuelvenNumeros 0
+  3 ~=? pasos 3 devuelvenNumeros 0,
+  10 ~=? pasos (sum [1..10]) sumasN 0
   ]
