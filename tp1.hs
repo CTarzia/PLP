@@ -157,6 +157,9 @@ sumas1 = ((+1):sumas1)
 sumas123 :: [LuzMagica Int]
 sumas123 = ((+1):((+2):((+3):sumas123)))
 
+devuelvenNumeros :: [LuzMagica Int]
+devuelvenNumeros = [(\x -> 1), (\x -> 2), (\x -> 3)]
+
 testsEj1 = test [
   "a" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea1,
   "b" ~=? recTarea (\n h -> n) (\t1 t2 s1 s2 -> s1) (\t1 t2 s1 s2 h -> s1) tarea6,
@@ -208,5 +211,9 @@ testsEj5 = test [
 
 testsEj6 = test [
   5 ~=? pasos 10 sumas1 5,
-  30 ~=? pasos 60 sumas123 0
+  30 ~=? pasos 60 sumas123 0,
+  0 ~=? pasos 1 sumas123 1,
+  1 ~=? pasos 1 devuelvenNumeros 0,
+  2 ~=? pasos 2 devuelvenNumeros 0,
+  3 ~=? pasos 3 devuelvenNumeros 0
   ]
