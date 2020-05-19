@@ -27,20 +27,20 @@ inferType e = case infer' e 0 of
 
 infer' :: PlainExp -> Int -> Result (Int, TypingJudgment)
 
--- COMPLETAR DESDE AQUI
-
 infer' (VarExp x)     n = OK (n + 1,(
                                   extendC emptyContext x (TVar n),
                                   (VarExp x),
                                   (TVar n)
                                )
                           )
+
 infer' ZeroExp        n = OK (n, (
                                   emptyContext,
                                   ZeroExp,
                                   TNat
                                )
                           )
+
 infer' (AppExp u v)   n = 
     case infer' u n of
         OK (nu, (cu, u', tu)) ->
@@ -80,7 +80,6 @@ infer' (LamExp x () e)     n =
             where nRes = n' + if x `elem` domainC c' then 1 else 0
                   xType = if x `elem` domainC c' then evalC c' x else (TVar n')
         res@(Error _) -> res
-
 
 infer' (SuccExp e) n =
     case infer' e n of
