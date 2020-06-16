@@ -1,38 +1,105 @@
 // Ejercicio 1
 function ejercicio1() {
-  Olaf = undefined;
+  Olaf = {
+    nombre: 'Olaf',
+    altura: 1.62,
+    directiva: 'abrazar'
+  };
 }
 
 // Ejercicio 2
 function ejercicio2() {
-  nuevoMuneco = undefined;
+  nuevoMuneco = function(nombre, altura, directiva) {
+    let muñecoResultante = Object.create(Olaf);
+    muñecoResultante.nombre = nombre;
+    muñecoResultante.altura = altura;
+    muñecoResultante.directiva = directiva;
+    return muñecoResultante;
+  };
 
-  Malvavisco = undefined;
+  Malvavisco = nuevoMuneco('Malvavisco', 5, 'cuidar a la reina');
 }
 
 // Ejercicio 3
 function ejercicio3() {
+  Olaf.presentarse = function() {
+    return `Hola, soy ${this.nombre} y me encanta ${this.directiva}`;
+  }
 
+  Olaf.abrazar = function() {
+    this.altura++;
+    return 'abrazar';
+  }
 }
 
 // Ejercicio 4
 function ejercicio4() {
-  Muneco = undefined;
+  Muneco = function(nombre, altura, directiva, acción) {
+    this.nombre = nombre;
+    this.altura = altura;
+    this.directiva = directiva;
+    this[directiva] = acción;
+  }
+
+  Muneco.prototype.presentarse = function() {
+    return `Hola, soy ${this.nombre} y me encanta ${this.directiva}`;
+  }
 
   /* ¿Quiénes pueden responder al mensaje "abrazar"?
-    Respuesta:
-
-  */
+   * Respuesta:
+   * - Olaf (porque es a quien le dimos esa responsabilidad originalmente)
+   * - Malvavisco (porque tiene a Olaf en su cadena de prototipos)
+   * - Un objeto creado con nuevoMuneco (porque tiene a Olaf en su cadena de
+   *   prototipos y Olaf puede responder abrazar)
+   * - Un objeto creado con Muneco que tenga 'abrazar' como directiva
+   */
 }
 
 // Ejercicio 5
 function ejercicio5() {
-  Liam = undefined;
+  Liam = new Muneco(
+    'Liam', NaN, 'mensajear',
+    function mensajear(remitente, destinatario, mensaje) {
+      if (mensaje in destinatario) {
+        let respuesta = destinatario[mensaje]();
+        if (respuesta in remitente) {
+          return remitente[respuesta]();
+        } else {
+          return respuesta;
+        }
+      } else {
+        return mensaje;
+      }
+    }
+  );
 }
 
 // Ejercicio 6
 function ejercicio6() {
+  Muneco.prototype.cambiarDirectiva = function(nuevaDirectiva, nuevaAccion) {
+    delete this[this.directiva];
 
+    if (this.directiva === nuevaDirectiva) {
+      this.directiva = '.';
+      return;
+    }
+
+    this.directiva = nuevaDirectiva;
+    this[this.directiva] = nuevaAccion;
+  }
+
+  Muneco.prototype.solicitarAyuda = function(ayudante) {
+    if (this.ayudante) {
+      this.ayudante.solicitarAyuda(ayudante);
+      return;
+    }
+
+    this.ayudante = ayudante;
+    this.ayudante.cambiarDirectiva(this.directiva, this[this.directiva]);
+  }
+
+  Olaf.solicitarAyuda = Muneco.prototype.solicitarAyuda
+  Olaf.cambiarDirectiva = Muneco.prototype.cambiarDirectiva
 }
 
 // Editen esta función para que devuelva lo que quieran mostrar en la salida.
