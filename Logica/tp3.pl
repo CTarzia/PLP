@@ -57,42 +57,105 @@ noMapa3([
 %%% EJERCICIO 1
 
 % islas(+M, -Is)
-islas(_,_).
+agregarIsla(Islas, I, [I|Islas]) :- not(member(I,Islas)).
+agregarIsla(Islas, I, Islas) :- member(I,Islas). 
+
+islas([],[]).
+islas([ruta(A,B,_)|ElResto], Is) :- 
+    islas(ElResto,IsRec),
+    agregarIsla(IsRec, A , IsConA),
+    agregarIsla(IsConA, B, Is).
 
 %%% EJERCICIO 2
 
 % islasVecinas(+M, +I, -Is)
-islasVecinas(_, _, _).
+islasVecinas([], _, []).
+islasVecinas([ruta(A,B,_)|ElResto], A, Is) :-
+    islasVecinas(ElResto, A, IsRec),
+    agregarIsla(IsRec, B, Is).
+islasVecinas([ruta(A,_,_)|ElResto], C, Is) :-
+    A \= C,
+    islasVecinas(ElResto, C, Is).
 
 %%% EJERCICIO 3
 
 % distanciaVecinas(+M, +I1, +I2, -N)
-distanciaVecinas(_, _, _,_).
+distanciaVecinas(M, I1, I2, N) :- member(ruta(I1,I2,N), M).
 
 %%% EJERCICIO 4
 
 % caminoSimple(+M, +O, +D, -C)
-caminoSimple(_, _, _, _).
+esVecino(M, Isla1, Isla2) :- member(ruta(Isla1, Isla2, _), M). 
+
+esCaminoValido(M, [Isla1, Isla2]) :- esVecino(M, Isla1, Isla2).
+esCaminoValido(M, [Isla1, Isla2|ElResto]) :-
+    esVecino(M, Isla1, Isla2),
+    esCaminoValido(M, [Isla2|ElResto]).
+
+caminoSimple(M, O, D, [O|C]) :-
+    islas(M,Is),
+    length(Is,CantIs),
+    between(2,CantIs,LargoC),
+    length([O|C], LargoC),
+    esCaminoValido(M, [O|C]),
+    is_set([O|C]),
+    last(C,D).
 
 %%% EJERCICIO 5
 
+todasLasIslasAlcanzables(M) :-
+    islas(M, Islas),
+    forall(
+      (member(A, Islas),
+      member(B, Islas), A\=B),
+      caminoSimple(M, A, B, _)
+    ).
+
+noHayRutaDeIslaASiMisma(M) :- not(member(ruta(I,I,_), M)).
+noHayRutasRepetidas(M) :-
+    not( 
+        (
+            member(ruta(A,B,D1), M),
+            member(ruta(A,B,D2), M),
+            D1 \= D2
+        )    
+    ), is_set(M).
+
 % mapa(+M)
-mapa(_).
+mapa(M) :-
+    todasLasIslasAlcanzables(M),
+    noHayRutaDeIslaASiMisma(M),
+    noHayRutasRepetidas(M).
 
 %%% EJERCICIO 6
 
 % caminoHamiltoniano(+M, +O, +D, -C)
-caminoHamiltoniano(_, _, _, _).
+caminoHamiltoniano(M, O, D, C) :- caminoSimple(M, O, D, C), islas(M, Is), same_length(Is, C).
 
 %%% EJERCICIO 7
 
 % caminoHamiltoniano(+M, -C)
-caminoHamiltoniano(_, _).
+caminoHamiltoniano(M, C) :-
+    islas(M, Is), member(A,Is), member(B,Is), A \= B, caminoHamiltoniano(M, A, B, C).
 
 %%% Ejercicio 8
 
+distancia(M, [I1,I2], D) :- member(ruta(I1,I2,D), M).
+distancia(M, [I1,I2|Resto], D) :-
+    distancia(M, [I2|Resto], DRec),
+    member(ruta(I1,I2,DVec), M),
+    D is DRec + DVec.
+
+hayCaminoMejor(M, O, D, Dist) :-
+    caminoSimple(M, O, D, C),
+    distancia(M, C, OtraDist),
+    OtraDist < Dist.
+
 % caminoMinimo(+M, +O, +D, -C, -Distancia)
-caminoMinimo(_, _, _, _, _).
+caminoMinimo(M, O, D, C, Dist) :-
+    caminoSimple(M, O, D, C),
+    distancia(M, C, Dist),
+    not(hayCaminoMejor(M, O, D, Dist)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
