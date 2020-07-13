@@ -92,15 +92,25 @@ esCaminoValido(M, [Isla1, Isla2|ElResto]) :-
     esVecino(M, Isla1, Isla2),
     esCaminoValido(M, [Isla2|ElResto]).
 
+% El mapa M debe venir siempre instanciado, sino islas(M, Is) se cuelga.
+% Luego, tanto O, como D y C pueden o no venir.
+% En el caso que no venga ninguno, va a instancias todos los
+% caminos simples posibles en C, el origen de C en O y el destino de C en D.
+% Si vienen O y D instancias pero C no, se instancia C con todos
+% los caminos simples posibles.
+% Si viene solo O instanciado, instanciará todos los C caminos simples
+% con origen en O e instanciará D con el destino de C.
+% Asi sigue con las distintas combinaciones.
+% caminoSimple(+M, ?O, ?D, ?C)
 caminoSimple(M, O, D, [O|C]) :-
     islas(M,Is),
     length(Is,CantIs),
+    % Probamos caminos de largo 2 hasta CantidadDeIslas
     between(2,CantIs,LargoC),
     length([O|C], LargoC),
     esCaminoValido(M, [O|C]),
     is_set([O|C]),
     last(C,D).
-    %%% TODO: estudiar reversibilidad
 
 %%% EJERCICIO 5
 
@@ -203,10 +213,36 @@ testIslasVecinas(3) :-
     length(Is, 3),
     sort(Is, [funafuti, nui, valitupu]).
 
-cantidadTestsDistanciaVecinas(0). % ¡Actualizar!
+cantidadTestsDistanciaVecinas(3).
+testDistanciaVecinas(1) :-
+    mapaEjemplo(Mapa),
+    distanciaVecinas(Mapa, tahiti, papeete, 20).
+testDistanciaVecinas(2) :-
+    mapaEjemplo(Mapa),
+    distanciaVecinas(Mapa, papeete, tahiti, 10).
+testDistanciaVecinas(3) :-
+    mapaEjemplo3(Mapa),
+    distanciaVecinas(Mapa, nui, valitupu, 50).
 
-cantidadTestsMapa(1). % ¡Actualizar!
+cantidadTestsMapa(15).
 testMapa(1) :- noMapa(NM), not(mapa(NM)).
+testMapa(2) :- noMapa2(NM), not(mapa(NM)).
+testMapa(3) :- noMapa3(NM), not(mapa(NM)).
+testMapa(4) :- mapaEjemplo(Mapa), mapa(Mapa).
+testMapa(5) :- mapaEjemplo2(Mapa), mapa(Mapa).
+testMapa(6) :- mapaEjemplo3(Mapa), mapa(Mapa).
+%% El noMapa tiene el problema de rutas repetidas.
+testMapa(7) :- noMapa(NM), todasLasIslasAlcanzables(NM).
+testMapa(8) :- noMapa(NM), noHayRutaDeIslaASiMisma(NM).
+testMapa(9) :- noMapa(NM), not(noHayRutasRepetidas(NM)).
+%% El noMapa2 tiene el problema de tener dos componentes conexas.
+testMapa(10) :- noMapa2(NM), not(todasLasIslasAlcanzables(NM)).
+testMapa(11) :- noMapa2(NM), noHayRutaDeIslaASiMisma(NM).
+testMapa(12) :- noMapa2(NM), noHayRutasRepetidas(NM).
+%% El noMapa3 tiene una ruta de una isla a si mismas.
+testMapa(13) :- noMapa3(NM), todasLasIslasAlcanzables(NM).
+testMapa(14) :- noMapa3(NM), not(noHayRutaDeIslaASiMisma(NM)).
+testMapa(15) :- noMapa3(NM), noHayRutasRepetidas(NM).
 
 cantidadTestsCaminos(3). % ¡Actualizar!
 testCaminos(1) :- mapaEjemplo(Mapa), setof(C, caminoSimple(Mapa, uturoa, papeete, C), L), length(L, 2).
@@ -216,12 +252,14 @@ testCaminos(3) :- mapaEjemplo3(M),setof(C, caminoHamiltoniano(M, C), L), length(
 
 tests(islas) :- cantidadTestsIslas(M), forall(between(1,M,N), testIslas(N)).
 tests(islasVecinas) :- cantidadTestsIslasVecinas(M), forall(between(1,M,N), testIslasVecinas(N)).
+tests(distanciaVecinas) :- cantidadTestsDistanciaVecinas(M), forall(between(1,M,N), testDistanciaVecinas(N)).
 tests(mapa) :- cantidadTestsMapa(M), forall(between(1,M,N), testMapa(N)).
 tests(caminos) :- cantidadTestsCaminos(M), forall(between(1,M,N), testCaminos(N)).
 
 tests(todos) :-
   tests(islas),
   tests(islasVecinas),
+  tests(distanciaVecinas),
   tests(mapa),
   tests(caminos).
 
