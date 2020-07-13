@@ -100,6 +100,7 @@ caminoSimple(M, O, D, [O|C]) :-
     esCaminoValido(M, [O|C]),
     is_set([O|C]),
     last(C,D).
+    %%% TODO: estudiar reversibilidad
 
 %%% EJERCICIO 5
 
@@ -156,11 +157,53 @@ caminoMinimo(M, O, D, C, Dist) :-
     caminoSimple(M, O, D, C),
     distancia(M, C, Dist),
     not(hayCaminoMejor(M, O, D, Dist)).
+    %%% TODO: estudiar reversibilidad
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-cantidadTestsIslas(1). % ¡Actualizar!
-testIslas(1) :- mapaEjemplo(Mapa), islas(Mapa, Islas), length(Islas, 3), sort(Islas, [papeete, tahiti, uturoa]).
+cantidadTestsIslas(5).
+testIslas(1) :-
+    agregarIsla([isla1, isla2, isla3], isla4, NuevasIslas),
+    length(NuevasIslas, 4),
+    sort(NuevasIslas, [isla1, isla2, isla3, isla4]).
+testIslas(2) :-
+    agregarIsla([isla1, isla2, isla3], isla3, NuevasIslas),
+    length(NuevasIslas, 3),
+    sort(NuevasIslas, [isla1, isla2, isla3]).
+testIslas(3) :-
+    mapaEjemplo(Mapa),
+    islas(Mapa, Islas),
+    length(Islas, 3),
+    sort(Islas, [papeete, tahiti, uturoa]).
+testIslas(4) :-
+    mapaEjemplo2(Mapa),
+    islas(Mapa, Islas),
+    length(Islas, 3),
+    sort(Islas, [funafuti, savave, valitupu]).
+testIslas(5) :-
+    mapaEjemplo3(Mapa),
+    islas(Mapa, Islas),
+    length(Islas, 4),
+    sort(Islas, [funafuti, nui, savave, valitupu]).
+
+cantidadTestsIslasVecinas(3).
+testIslasVecinas(1) :-
+    mapaEjemplo(Mapa),
+    islasVecinas(Mapa, uturoa, Is),
+    length(Is, 2),
+    sort(Is, [papeete, tahiti]).
+testIslasVecinas(2) :-
+    mapaEjemplo3(Mapa),
+    islasVecinas(Mapa, nui, Is),
+    length(Is, 2),
+    sort(Is, [savave, valitupu]).
+testIslasVecinas(3) :-
+    mapaEjemplo3(Mapa),
+    islasVecinas(Mapa, savave, Is),
+    length(Is, 3),
+    sort(Is, [funafuti, nui, valitupu]).
+
+cantidadTestsDistanciaVecinas(0). % ¡Actualizar!
 
 cantidadTestsMapa(1). % ¡Actualizar!
 testMapa(1) :- noMapa(NM), not(mapa(NM)).
@@ -172,11 +215,13 @@ testCaminos(3) :- mapaEjemplo3(M),setof(C, caminoHamiltoniano(M, C), L), length(
 
 
 tests(islas) :- cantidadTestsIslas(M), forall(between(1,M,N), testIslas(N)).
+tests(islasVecinas) :- cantidadTestsIslasVecinas(M), forall(between(1,M,N), testIslasVecinas(N)).
 tests(mapa) :- cantidadTestsMapa(M), forall(between(1,M,N), testMapa(N)).
 tests(caminos) :- cantidadTestsCaminos(M), forall(between(1,M,N), testCaminos(N)).
 
 tests(todos) :-
   tests(islas),
+  tests(islasVecinas),
   tests(mapa),
   tests(caminos).
 
