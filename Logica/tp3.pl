@@ -173,7 +173,15 @@ hayCaminoMejor(M, O, D, Dist) :-
     distancia(M, C, OtraDist),
     OtraDist < Dist.
 
-% caminoMinimo(+M, +O, +D, -C, -Distancia)
+% Alcanza con que esté instanciado el Mapa para que el predicado funcione:
+% - Sólo instanciar el mapa otorgará todos los caminos mínimos
+% - Sólo origen o el destino los caminos que mínimos que empiecen/terminen
+%   allí
+% - Sólo el camino extraerá la información de Origen, Destino y Distancia
+%   si es que éste es mínimo (fallando sino)
+% - Sólo la distancia ofrecerá los caminos mínimos que posean esa distancia
+% Lo mismo ocurre para el resto de las instanciaciones posibles!
+% caminoMinimo(+M, ?O, ?D, ?C, ?Distancia)
 caminoMinimo(M, O, D, C, Dist) :-
     caminoSimple(M, O, D, C),
     distancia(M, C, Dist),
