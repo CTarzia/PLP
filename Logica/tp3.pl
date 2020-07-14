@@ -243,6 +243,9 @@ testDistanciaVecinas(3) :-
     mapaEjemplo3(Mapa),
     distanciaVecinas(Mapa, nui, valitupu, 50).
 
+cantidadTestsCaminoSimple(0).
+testCaminoSimple(0).
+
 cantidadTestsMapa(16).
 testMapa(1) :- noMapa(NM), not(mapa(NM)).
 testMapa(2) :- noMapa2(NM), not(mapa(NM)).
@@ -324,6 +327,7 @@ testCaminoMinimo(6) :- % Hay 3 caminos mínimos posibles!
 tests(islas) :- cantidadTestsIslas(M), forall(between(1,M,N), testIslas(N)).
 tests(islasVecinas) :- cantidadTestsIslasVecinas(M), forall(between(1,M,N), testIslasVecinas(N)).
 tests(distanciaVecinas) :- cantidadTestsDistanciaVecinas(M), forall(between(1,M,N), testDistanciaVecinas(N)).
+tests(caminoSimple) :- cantidadTestsCaminoSimple(M), forall(between(1,M,N), testCaminoSimple(N)).
 tests(mapa) :- cantidadTestsMapa(M), forall(between(1,M,N), testMapa(N)).
 tests(caminos) :- cantidadTestsCaminos(M), forall(between(1,M,N), testCaminos(N)).
 tests(hamiltoniano) :- cantidadTestsHamiltoniano(M), forall(between(1,M,N), testHamiltoniano(N)).
