@@ -26,6 +26,17 @@ mapaEjemplo3([
       ruta(savave, nui, 50),
       ruta(funafuti, valitupu, 30),
       ruta(funafuti, savave, 20)]).
+
+% Un mapa con múltiples caminos mínimos de A a D
+mapaAburrido([
+      ruta(a, b1, 1),
+      ruta(a, b2, 1),
+      ruta(a, b3, 1),
+      ruta(b3, c, 1),
+      ruta(b1, d, 2),
+      ruta(b2, d, 2),
+      ruta(c, d, 1),
+      ruta(d, a, 1)]).
       
 noMapa([
       ruta(uturoa, tahiti, 50),
@@ -249,18 +260,39 @@ testCaminos(1) :- mapaEjemplo(Mapa), setof(C, caminoSimple(Mapa, uturoa, papeete
 testCaminos(2) :- mapaEjemplo(Mapa), setof(C, caminoHamiltoniano(Mapa, uturoa, papeete, C), L), length(L, 1).
 testCaminos(3) :- mapaEjemplo3(M),setof(C, caminoHamiltoniano(M, C), L), length(L, 8).
 
+cantidadTestsCaminoMinimo(6).
+testCaminoMinimo(1) :- % Existe un camino mínimo
+  mapaEjemplo(Mapa), caminoMinimo(Mapa, uturoa, tahiti, Camino, Distancia),
+  length(Camino, 3), Distancia is 30.
+testCaminoMinimo(2) :- % No existen caminos menores
+  mapaEjemplo(Mapa), not((
+    caminoMinimo(Mapa, uturoa, tahiti, _, Distancia), Distancia < 30
+  )).
+testCaminoMinimo(3) :- % El camino existe, pero no es mínimo
+  mapaEjemplo(Mapa), not(caminoMinimo(Mapa, uturoa, tahiti, [uturoa, tahiti], 50)).
+testCaminoMinimo(4) :- % El camino no existe, pero sería mínimo
+  mapaEjemplo(Mapa), not(caminoMinimo(Mapa, uturoa, tahiti, [uturoa, tahiti], 20)).
+testCaminoMinimo(5) :- % Hay más de un camino mínimo
+  mapaAburrido(Mapa),
+  caminoMinimo(Mapa, a, d, Camino1, Distancia), length(Camino1, 4),
+  caminoMinimo(Mapa, a, d, Camino2, Distancia), length(Camino2, 3).
+testCaminoMinimo(6) :- % Hay 3 caminos mínimos posibles!
+  mapaAburrido(Mapa),
+  setof(Camino, caminoMinimo(Mapa, a, d, Camino, _), Soluciones), length(Soluciones, 3).
 
 tests(islas) :- cantidadTestsIslas(M), forall(between(1,M,N), testIslas(N)).
 tests(islasVecinas) :- cantidadTestsIslasVecinas(M), forall(between(1,M,N), testIslasVecinas(N)).
 tests(distanciaVecinas) :- cantidadTestsDistanciaVecinas(M), forall(between(1,M,N), testDistanciaVecinas(N)).
 tests(mapa) :- cantidadTestsMapa(M), forall(between(1,M,N), testMapa(N)).
 tests(caminos) :- cantidadTestsCaminos(M), forall(between(1,M,N), testCaminos(N)).
+tests(caminoMinimo) :- cantidadTestsCaminoMinimo(M), forall(between(1,M,N), testCaminoMinimo(N)).
 
 tests(todos) :-
   tests(islas),
   tests(islasVecinas),
   tests(distanciaVecinas),
   tests(mapa),
-  tests(caminos).
+  tests(caminos),
+  tests(caminoMinimo).
 
 tests :- tests(todos).
