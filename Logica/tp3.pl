@@ -262,6 +262,23 @@ testCaminos(1) :- mapaEjemplo(Mapa), setof(C, caminoSimple(Mapa, uturoa, papeete
 testCaminos(2) :- mapaEjemplo(Mapa), setof(C, caminoHamiltoniano(Mapa, uturoa, papeete, C), L), length(L, 1).
 testCaminos(3) :- mapaEjemplo3(M),setof(C, caminoHamiltoniano(M, C), L), length(L, 8).
 
+cantidadTestsHamiltoniano(4).
+testHamiltoniano(1) :- % Se puede completar el camino hamiltoniano
+  mapaEjemplo(Mapa),
+  setof(Camino, caminoHamiltoniano(Mapa, uturoa, tahiti, Camino), Caminos),
+  length(Caminos, 1).
+testHamiltoniano(2) :- % Se pueden conocer todos los caminos hamiltonianos
+  mapaEjemplo(Mapa),
+  setof(Camino, caminoHamiltoniano(Mapa, Camino), Caminos),
+  length(Caminos, 6).
+testHamiltoniano(3) :- % Hay grafos sin caminos hamiltonianos
+  mapaAburrido(Mapa),
+  not(caminoHamiltoniano(Mapa, _)).
+testHamiltoniano(4) :- % Hay grafos que tienen más de un camino hamiltoniano de A a B
+  mapaEjemplo3(Mapa),
+  setof(Camino, caminoHamiltoniano(Mapa, nui, funafuti, Camino), Caminos),
+  length(Caminos, 2).
+
 cantidadTestsDistancia(3).
 testDistancia(1) :- % Funciona con caminos no mínimos
   mapaEjemplo(Mapa), distancia(Mapa, [uturoa, tahiti], 50).
@@ -301,6 +318,7 @@ tests(islasVecinas) :- cantidadTestsIslasVecinas(M), forall(between(1,M,N), test
 tests(distanciaVecinas) :- cantidadTestsDistanciaVecinas(M), forall(between(1,M,N), testDistanciaVecinas(N)).
 tests(mapa) :- cantidadTestsMapa(M), forall(between(1,M,N), testMapa(N)).
 tests(caminos) :- cantidadTestsCaminos(M), forall(between(1,M,N), testCaminos(N)).
+tests(hamiltoniano) :- cantidadTestsHamiltoniano(M), forall(between(1,M,N), testHamiltoniano(N)).
 tests(distancia) :- cantidadTestsDistancia(M), forall(between(1,M,N), testDistancia(N)).
 tests(hayCaminoMejor) :- cantidadTestsHayCaminoMejor(M), forall(between(1,M,N), testHayCaminoMejor(N)).
 tests(caminoMinimo) :- cantidadTestsCaminoMinimo(M), forall(between(1,M,N), testCaminoMinimo(N)).
@@ -311,6 +329,7 @@ tests(todos) :-
   tests(distanciaVecinas),
   tests(mapa),
   tests(caminos),
+  tests(hamiltoniano),
   tests(distancia),
   tests(hayCaminoMejor).
   tests(caminoMinimo).
