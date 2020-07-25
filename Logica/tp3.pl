@@ -71,22 +71,15 @@ noMapa3([
 agregarIsla(Islas, I, [I|Islas]) :- not(member(I,Islas)).
 agregarIsla(Islas, I, Islas) :- member(I,Islas). 
 
-islas([],[]).
-islas([ruta(A,B,_)|ElResto], Is) :- 
-    islas(ElResto,IsRec),
-    agregarIsla(IsRec, A , IsConA),
-    agregarIsla(IsConA, B, Is).
+islaEnMapa(Mapa, Isla) :- member(ruta(Isla, _, _), Mapa).
+islaEnMapa(Mapa, Isla) :- member(ruta(_, Isla, _), Mapa).
+islas(Mapa,Islas) :- setof(Isla, islaEnMapa(Mapa, Isla), Islas).
 
 %%% EJERCICIO 2
 
 % islasVecinas(+M, +I, -Is)
-islasVecinas([], _, []).
-islasVecinas([ruta(A,B,_)|ElResto], A, Is) :-
-    islasVecinas(ElResto, A, IsRec),
-    agregarIsla(IsRec, B, Is).
-islasVecinas([ruta(A,_,_)|ElResto], C, Is) :-
-    A \= C,
-    islasVecinas(ElResto, C, Is).
+esVecino(M, Isla1, Isla2) :- member(ruta(Isla1, Isla2, _), M).
+islasVecinas(Mapa, I, Is) :- setof(Vec, esVecino(Mapa, I, Vec), Is).
 
 %%% EJERCICIO 3
 
@@ -96,7 +89,6 @@ distanciaVecinas(M, I1, I2, N) :- member(ruta(I1,I2,N), M).
 %%% EJERCICIO 4
 
 % caminoSimple(+M, +O, +D, -C)
-esVecino(M, Isla1, Isla2) :- member(ruta(Isla1, Isla2, _), M). 
 
 esCaminoValido(M, [Isla1, Isla2]) :- esVecino(M, Isla1, Isla2).
 esCaminoValido(M, [Isla1, Isla2|ElResto]) :-
@@ -192,24 +184,19 @@ caminoMinimo(M, O, D, C, Dist) :-
     caminoSimple(M, O, D, C),
     distancia(M, C, Dist),
     not(hayCaminoMejor(M, O, D, Dist)).
-    %%% TODO: estudiar reversibilidad
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 cantidadTestsIslas(5).
 testIslas(1) :-
-    agregarIsla([isla1, isla2, isla3], isla4, NuevasIslas),
-    length(NuevasIslas, 4),
-    sort(NuevasIslas, [isla1, isla2, isla3, isla4]).
-testIslas(2) :-
-    agregarIsla([isla1, isla2, isla3], isla3, NuevasIslas),
-    length(NuevasIslas, 3),
-    sort(NuevasIslas, [isla1, isla2, isla3]).
-testIslas(3) :-
     mapaEjemplo(Mapa),
-    islas(Mapa, Islas),
-    length(Islas, 3),
-    sort(Islas, [papeete, tahiti, uturoa]).
+    islaEnMapa(Mapa, papeete).
+testIslas(2) :-
+    mapaEjemplo2(Mapa),
+    islaEnMapa(Mapa, savave).
+testIslas(3) :-
+    mapaEjemplo3(Mapa),
+    not(islaEnMapa(Mapa, tahiti)).
 testIslas(4) :-
     mapaEjemplo2(Mapa),
     islas(Mapa, Islas),
