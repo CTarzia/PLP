@@ -68,9 +68,6 @@ noMapa3([
 %%% EJERCICIO 1
 
 % islas(+M, -Is)
-agregarIsla(Islas, I, [I|Islas]) :- not(member(I,Islas)).
-agregarIsla(Islas, I, Islas) :- member(I,Islas). 
-
 islaEnMapa(Mapa, Isla) :- member(ruta(Isla, _, _), Mapa).
 islaEnMapa(Mapa, Isla) :- member(ruta(_, Isla, _), Mapa).
 islas(Mapa,Islas) :- setof(Isla, islaEnMapa(Mapa, Isla), Islas).
