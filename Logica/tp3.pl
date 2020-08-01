@@ -84,33 +84,19 @@ islasVecinas(Mapa, I, Is) :- setof(Vec, esVecino(Mapa, I, Vec), Is).
 distanciaVecinas(M, I1, I2, N) :- member(ruta(I1,I2,N), M).
 
 %%% EJERCICIO 4
+caminoSimple(M, O, D, [O, D], V) :-
+    not(member(O, V)),
+    not(member(D, V)),
+    esVecino(M, O, D).
 
-% caminoSimple(+M, +O, +D, -C)
+caminoSimple(M, O, D, [O|C], V) :-
+    not(member(O, V)),
+    esVecino(M, O, S),
+    caminoSimple(M, S, D, C, [O|V]).
 
-esCaminoValido(M, [Isla1, Isla2]) :- esVecino(M, Isla1, Isla2).
-esCaminoValido(M, [Isla1, Isla2|ElResto]) :-
-    esVecino(M, Isla1, Isla2),
-    esCaminoValido(M, [Isla2|ElResto]).
-
-% El mapa M debe venir siempre instanciado, sino islas(M, Is) se cuelga.
-% Luego, tanto O, como D y C pueden o no venir.
-% En el caso que no venga ninguno, va a instancias todos los
-% caminos simples posibles en C, el origen de C en O y el destino de C en D.
-% Si vienen O y D instancias pero C no, se instancia C con todos
-% los caminos simples posibles.
-% Si viene solo O instanciado, instanciará todos los C caminos simples
-% con origen en O e instanciará D con el destino de C.
-% Asi sigue con las distintas combinaciones.
-% caminoSimple(+M, ?O, ?D, ?C)
-caminoSimple(M, O, D, [O|C]) :-
-    islas(M,Is),
-    length(Is,CantIs),
-    % Probamos caminos de largo 2 hasta CantidadDeIslas
-    between(2,CantIs,LargoC),
-    length([O|C], LargoC),
-    esCaminoValido(M, [O|C]),
-    is_set([O|C]),
-    last(C,D).
+% caminoSimple(+M, +O, +D, ?C)
+caminoSimple(M, O, D, C) :-
+    caminoSimple(M, O, D, C, []).
 
 %%% EJERCICIO 5
 
@@ -235,13 +221,11 @@ testCaminoSimple(1) :- % Podemos mirar todos los caminos simples
     length(Caminos, 12).
 testCaminoSimple(2) :- % Podemos ver si un camino que es simple existe
     mapaEjemplo3(Mapa),
-    not(esCaminoValido(Mapa, [funafuti, valitupu, nui])),
     not(caminoSimple(Mapa, _, _, [funafuti, valitupu, nui])).
 testCaminoSimple(3) :- % Podemos ver si un camino que existe es simple
     mapaEjemplo3(Mapa),
     caminoSimple(Mapa, _, _, [nui, valitupu, funafuti]),
     caminoSimple(Mapa, _, _, [funafuti, valitupu]),
-    esCaminoValido(Mapa, [nui, valitupu, funafuti, valitupu]),
     not(caminoSimple(Mapa, _, _, [nui, valitupu, funafuti, valitupu])).
 testCaminoSimple(4) :- % Podemos extraer informacion de un camino simple
     mapaEjemplo3(Mapa),
