@@ -214,29 +214,25 @@ testDistanciaVecinas(3) :-
     mapaEjemplo3(Mapa),
     distanciaVecinas(Mapa, nui, valitupu, 50).
 
-cantidadTestsCaminoSimple(6).
-testCaminoSimple(1) :- % Podemos mirar todos los caminos simples
-    mapaEjemplo(Mapa),
-    setof(Camino, A^B^caminoSimple(Mapa, A, B, Camino), Caminos),
-    length(Caminos, 12).
-testCaminoSimple(2) :- % Podemos ver si un camino que es simple existe
+cantidadTestsCaminoSimple(5).
+testCaminoSimple(1) :- % Podemos ver si un camino que es simple existe
     mapaEjemplo3(Mapa),
     not(caminoSimple(Mapa, _, _, [funafuti, valitupu, nui])).
-testCaminoSimple(3) :- % Podemos ver si un camino que existe es simple
+testCaminoSimple(2) :- % Podemos ver si un camino que existe es simple
     mapaEjemplo3(Mapa),
     caminoSimple(Mapa, _, _, [nui, valitupu, funafuti]),
     caminoSimple(Mapa, _, _, [funafuti, valitupu]),
     not(caminoSimple(Mapa, _, _, [nui, valitupu, funafuti, valitupu])).
-testCaminoSimple(4) :- % Podemos extraer informacion de un camino simple
+testCaminoSimple(3) :- % Podemos extraer informacion de un camino simple
     mapaEjemplo3(Mapa),
     caminoSimple(Mapa, Origen, Destino, [nui, valitupu, funafuti]),
     Origen = nui,
     Destino = funafuti.
-testCaminoSimple(5) :- % Podemos conseguir los caminos simples entre dos puntos
+testCaminoSimple(4) :- % Podemos conseguir los caminos simples entre dos puntos
     mapaAburrido(Mapa),
     setof(Camino, caminoSimple(Mapa, a, d, Camino), Caminos),
     length(Caminos, 3).
-testCaminoSimple(6) :- % Podemos ver que todos los caminos de "un paso" son simples
+testCaminoSimple(5) :- % Podemos ver que todos los caminos de "un paso" son simples
     mapaEjemplo3(Mapa),
     forall(esVecino(Mapa, A, B), caminoSimple(Mapa, A, B, [A, B])).
 
