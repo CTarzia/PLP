@@ -127,13 +127,8 @@ todasLasIslasAlcanzables(M) :-
 
 noHayRutaDeIslaASiMisma(M) :- not(member(ruta(I,I,_), M)).
 noHayRutasRepetidas(M) :-
-    not( 
-        (
-            member(ruta(A,B,D1), M),
-            member(ruta(A,B,D2), M),
-            D1 \= D2
-        )    
-    ), is_set(M).
+  findall(ruta(A, B), esVecino(A, B), Vecinos),
+  is_set(Vecinos).
 
 % mapa(+M)
 mapa(M) :-
