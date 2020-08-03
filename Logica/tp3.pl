@@ -84,6 +84,7 @@ islasVecinas(Mapa, I, Is) :- setof(Vec, esVecino(Mapa, I, Vec), Is).
 distanciaVecinas(M, I1, I2, N) :- member(ruta(I1,I2,N), M).
 
 %%% EJERCICIO 4
+% caminoSimple(+Mapa, +Origen, +Destino, ?Camino, +VerticesIslasYaVisitados)
 caminoSimple(M, O, D, [O, D], V) :-
     not(member(O, V)),
     not(member(D, V)),
@@ -95,7 +96,59 @@ caminoSimple(M, O, D, [O|C], V) :-
     caminoSimple(M, S, D, C, [O|V]).
 
 % caminoSimple(+M, +O, +D, ?C)
+% Analisis de reversibilidad:
+%%%
+% Si M no viene instanciada, el programa se tilda.
+% Esto sucede ya que islas(M, Islas) genera una rama infinita.
+% islas(M, Islas) implica resolver setof con predicado islaEnMapa(Mapa, Isla)
+% Si islaEnMapa(Mapa, Isla) se llama sin ningun parametro instanciado,
+% en la primer clausula reduce por member(ruta(Isla, _, _), Mapa),
+% por lo que Mapa se instancia como una lista.
+% Aca se tilda, ya que setof llamando a islaEnMapa instancia
+% Mapa = [ruta(Isla, _, _)], luego
+% Mapa = [_, ruta(Isla, _, _)], luego
+% Mapa = [_, _, ruta(Isla, _, _)], y asi sigue.
+% Por eso, M debe venir instanciada
+%%%
+% Si M está instanciada y O o D (son analogos) no están instanciadas,
+% islas(M, Islas) instancia Islas con la lista de todas las listas
+% y luego los member(O,Islas), member(D,Islas)
+% instancian O y D si no venian instanciados.
+% Si O o D venian instanciados, member(O,Islas), member(D,Islas)
+% solo chequea que estén en el listado de Islas,
+% haciendo que se corte en False si las O o D vienen instanciadas con islas no existentes.
+%%%
+% Notar que O y D se instancian antes de que se haga cualquier uso de C.
+% Unas vez instanciadas O y D (o si ya venian instanciadas), y con M instanciada,
+% si C no viene instanciada, la primer clausula de caminoSimple/5
+% va a instanciarlo como [O, D] y va a terminar satisfactoriamente si y solo si
+% O es vecino de D en M.
+% La segunda clausula de caminoSimple/5 va a instanciar S con los vecinos de O,
+% instanciar C con la lista con primer elemento O,
+% y seguir completando C con los caminos de S a D (ambos instanciados).
+% Si C ya venia instanciada como [], fallará al no poder unificar
+% con ninguna de las clausulas de caminoSimple/5
+% (la primera clausula pide C de dos elementos y la segunda de al menos un elemento).
+% Si C venia instanciada con un solo elemento, unificara con la segunda clausula,
+% instanciara S con un vecino de O,
+% pero luego llamara recursivamente a caminoSimple/5 con un nuevo C vacio, que fallara.
+% Si C venia instanciada con dos elementos, unificara con la primer clausula sii C = [O,D]
+% y verificara que O sea vecino de D.
+% Luego unificara con la segunda clausula, instanciara S con un vecino de O,
+% y llamará recursivamente a caminoSimple/5 con un nuevo C de un solo elemento,
+% que como dijimos recien, siempre falla.
+% Si C tiene mas de 2 elementos, no unificara con la primer clausula pero si con la segunda,
+% si y solo si C tiene como primer elemento a O.
+% Esta instanciara S con un vecino de O y llamara recursivamente a caminoSimple/5
+% con la cola de C y con V teniendo a O, para evitar ciclos.
+% Las llamadas recursivas seguiran chequeando lo mismo que dijimos dependiendo el tamaño de C,
+% agregando el chequeo anti-ciclos con V no vacio.
+
 caminoSimple(M, O, D, C) :-
+    islas(M, Islas),
+    member(O, Islas),
+    member(D, Islas),
+    % Se buscan caminos simples de O a D empezando sin haber pasado por ningun vertice isla
     caminoSimple(M, O, D, C, []).
 
 %%% EJERCICIO 5
@@ -143,20 +196,40 @@ hayCaminoMejor(M, O, D, Dist) :-
     distancia(M, C, OtraDist),
     OtraDist < Dist.
 
-% Alcanza con que esté instanciado el Mapa para que el predicado funcione:
-% - Sólo instanciar el mapa otorgará todos los caminos mínimos
-% - Sólo mapa+origen o el mapa+destino los caminos que mínimos que
-%   empiecen/terminen allí
-% - Sólo el mapa+camino extraerá la información de Origen, Destino y
-%   Distancia si es que éste es mínimo (fallando sino)
-% - Sólo la mapa_distancia ofrecerá los caminos mínimos que posean esa
-%   distancia
-%
-% Para el resto de instanciaciones posibles (siempre que esté el mapa
-% instanciado) el predicado completará la información faltante o fallará
-% si no existen que cumplan esos requisitos, pero las combinaciones son
-% muchas y no tan interesantes cómo para listarlas todas :)
-%
+% Analisis de reversibilidad:
+%%%
+% Si M no viene instanciada, el programa se tilda.
+% Esto sucede ya que primero se intenta resolver caminoSimple(M, O, D, C),
+% y este primero intenta resolver islas(M, Islas),
+% que genera una rama infinita.
+% La justificacion de esto se puede leer en el analisis de reversibilidad de caminoSimple/4.
+% Por esto, siempre debe venir instanciada.
+%%%
+% Si O o D no vienen instanciadas, al resolver caminoSimple(M, O, D, C)
+% son instanciadas con islas que pertenecen a M por el member(O, Islas) y member(D, Islas).
+% Notar que O y D se instancian antes de que se haga cualquier uso de C.
+% Nuevamente, si C no venia instanciada, sera instanciada con todos los caminos posibles de O a D
+% en caminoSimple. Como se instancia C si no venia instanciada esta explicado en el analisis
+% de reversibilidad de caminoSimple/4.
+% Una vez resuelto caminoSimple(M, O, D, C), estas cuatro variables estaran instanciadas o bien
+% porque ya venian instanciadas o porque caminoSimple/4 las instancio (en el caso de O, D y C).
+% Ademas, sabemos que estan instanciadas con algo valido
+% (O y D son islas en M, C es un camino de O a D con rutas validas de M).
+% Luego, si Dist no venia instanciada, distancia(M, C, Dist) la instanciara sumando
+% la distancia de las distintas rutas del camino C en el mapa M.
+% Para que esto suceda, si C tiene dos elementos solo unifica con la primer clausula de distancia/3,
+% unificando la Distancia con la que aparece en la ruta de M entre esos dos elementos.
+% Si C tiene mas de dos elementos, solo unificara con la segunda clausula de distancia/3,
+% que resolvera el problema de la distancia (DRec) en la cola de C
+% y luego a esta distancia le sumara la distancia entre las primeras dos islas
+% y unificara Dist con el resultado de la suma (con el 'is').
+% Notar que C no puede tener menos de dos elementos ya que fue instanciado o chequeado
+% anteriormente (en caminoSimple(M, O, D, C)) para que sea un camino valido de O a D.
+% Si Dist ya venia instanciada, distancia(M, C, Dist)
+% solo chequeara que tenga el valor correcto
+% con el member en la primer clausula si C tiene dos elementos o
+% con el 'is' en la segunda clausula si C tiene mas de dos elementos.
+%%%
 % caminoMinimo(+M, ?O, ?D, ?C, ?Distancia)
 caminoMinimo(M, O, D, C, Dist) :-
     caminoSimple(M, O, D, C),
