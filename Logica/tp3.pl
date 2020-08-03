@@ -95,7 +95,6 @@ caminoSimple(M, O, D, [O|C], V) :-
     esVecino(M, O, S),
     caminoSimple(M, S, D, C, [O|V]).
 
-% caminoSimple(+M, +O, +D, ?C)
 % Analisis de reversibilidad:
 %%%
 % Si M no viene instanciada, el programa se tilda.
@@ -144,6 +143,7 @@ caminoSimple(M, O, D, [O|C], V) :-
 % Las llamadas recursivas seguiran chequeando lo mismo que dijimos dependiendo el tamaño de C,
 % agregando el chequeo anti-ciclos con V no vacio.
 
+% caminoSimple(+M, ?O, ?D, ?C)
 caminoSimple(M, O, D, C) :-
     islas(M, Islas),
     member(O, Islas),
